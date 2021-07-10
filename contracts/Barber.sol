@@ -108,7 +108,7 @@ contract Barber is Ownable, ReentrancyGuard {
 
     // Add a new lp to the pool. Can only be called by the owner.
     function add(uint256 _allocPoint, IERC20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner nonDuplicated(_lpToken) {
-        require(_depositFeeBP <= 10000, "add: invalid deposit fee basis points");
+        require(_depositFeeBP <= 1000, "add: invalid deposit fee basis points");
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -126,7 +126,7 @@ contract Barber is Ownable, ReentrancyGuard {
 
     // Update the given pool's HAIR allocation point and deposit fee. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
-        require(_depositFeeBP <= 10000, "set: invalid deposit fee basis points");
+        require(_depositFeeBP <= 1000, "set: invalid deposit fee basis points");
         if (_withUpdate) {
             massUpdatePools();
         }

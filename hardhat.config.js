@@ -71,9 +71,9 @@ module.exports = {
     },
     maticTestnet: {
       url: 'https://rpc-mumbai.maticvigil.com',
-      accounts: [
-        '9bb987718a0382205c5af693b7ac72a00668b15da7fd6e5434e35d7f2ab1f6ec',
-      ],
+      accounts: {
+        mnemonic: `${process.env.MNEMONIC}`,
+      },
       chainId: 80001,
       gasPrice: 8000000000,
       gas: 2100000,

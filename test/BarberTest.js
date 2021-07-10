@@ -134,4 +134,14 @@ describe('Barber', function (...args) {
   it('there cannot be duplicate pools', async () => {
     await expectRevert(this.barber.add(1000, this.hairToken.address, 0, true), 'nonDuplicated: duplicated');
   });
+
+  it('the maximum deposit fee is 10%', async () => {
+    const newFarm = await MockTokenFactory.deploy('LPToken', 'LPMaxBreaker', 1000000);
+
+    await expectRevert(this.barber.add(1000, newFarm.address, 1001, true), 'add: invalid deposit fee basis points');
+
+    expect(await this.barber.poolLength()).to.equal(1);
+    await this.barber.add(2000, newFarm.address, 500, true);
+    expect(await this.barber.poolLength()).to.equal(2, 'when the deposit fee is valid it is added');
+  });
 });
