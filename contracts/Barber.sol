@@ -255,7 +255,8 @@ contract Barber is Ownable, ReentrancyGuard {
         emit SetDevAddress(msg.sender, _devAddress);
     }
 
-    function setFeeAddress(address _feeAddress) external onlyOwner {
+    function setFeeAddress(address _feeAddress) external {
+        require(msg.sender == feeAddress, "setFeeAddress: FORBIDDEN"); 
         feeAddress = _feeAddress;
         emit SetFeeAddress(msg.sender, _feeAddress);
     }

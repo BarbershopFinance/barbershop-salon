@@ -125,9 +125,12 @@ describe('Barber', function (...args) {
     expect(await this.barber.hairPerBlock()).to.equal(420);
   });
 
-  it('can change the fee address', async () => {
+  it('previous fee address can change the fee address', async () => {
     expect(await this.barber.feeAddress()).to.equal(fee.address);
-    expect(await this.barber.setFeeAddress(bob.address)).to.emit(this.barber, 'SetFeeAddress');
+
+    await expectRevert(this.barber.setFeeAddress(bob.address), 'setFeeAddress: FORBIDDEN');
+
+    expect(await this.barber.connect(fee).setFeeAddress(bob.address)).to.emit(this.barber, 'SetFeeAddress');
     expect(await this.barber.feeAddress()).to.equal(bob.address);
   });
 

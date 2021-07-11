@@ -48,15 +48,11 @@ module.exports = {
       url: 'http://127.0.0.1:7545',
       port: 7545,
       network_id: '101',
-      // gasPrice:   0x1,
-      // gas:        0x1fffffffffffff
     },
     testing: {
       url: 'http://127.0.0.1:7545',
       port: 7545,
       network_id: '*',
-      // gasPrice: 0,
-      accounts: { mnemonic: mnemonic },
       gasPrice: 8000000000,
       gas: 2100000,
     },

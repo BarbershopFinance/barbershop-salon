@@ -113,6 +113,7 @@ contract HairVault is Ownable, Pausable {
         uint256 pool = balanceOf();
         token.safeTransferFrom(msg.sender, address(this), _amount);
         uint256 currentShares = 0;
+
         if (totalShares != 0) {
             currentShares = (_amount.mul(totalShares)).div(pool);
         } else {
@@ -141,7 +142,7 @@ contract HairVault is Ownable, Pausable {
     }
 
     /**
-     * @notice Reinvests HAIR tokens intobarber 
+     * @notice Reinvests HAIR tokens into barber 
      * @dev Only possible when contract not paused.
      */
     function harvest() external notContract whenNotPaused {
@@ -337,7 +338,7 @@ contract HairVault is Ownable, Pausable {
 
     /**
      * @notice Calculates the total underlying tokens
-     * @dev It includes tokens held by the contract and held inbarber 
+     * @dev It includes tokens held by the contract and held in barber 
      */
     function balanceOf() public view returns (uint256) {
         (uint256 amount, ) = IBarber(barber).userInfo(0, address(this));
