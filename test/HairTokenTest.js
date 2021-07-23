@@ -6,10 +6,11 @@ describe('HairToken', function () {
   let hairToken;
   let alice;
   let bob;
+  let carol;
   let deployer;
 
   beforeEach(async () => {
-    ({ deployer, dev, fee, alice, bob } = await ethers.getNamedSigners());
+    ({ deployer, dev, fee, alice, bob, carol } = await ethers.getNamedSigners());
 
     HairToken = await ethers.getContractFactory('HairToken');
     hairToken = await HairToken.deploy();
@@ -76,6 +77,19 @@ describe('HairToken', function () {
       it('returns the existing supply', async () => {
         expect(await hairToken.totalSupply()).to.be.equal(amount.mul(2));
       });
+    });
+  });
+
+  describe('Delegation power attack', async function () {
+    it('should multiply delegation power on transfers', async function () {
+      await hairToken.mint(deployer.address, 100);
+      await hairToken.delegate(carol.address);
+      await hairToken.transfer(alice.address, 100);
+      await hairToken.connect(alice).delegate(carol.address);
+      await hairToken.connect(alice).transfer(bob.address, 100);
+      await hairToken.connect(bob).delegate(carol.address);
+      const votes = await hairToken.getCurrentVotes(carol.address);
+      console.log('votes', votes.toString());
     });
   });
 });

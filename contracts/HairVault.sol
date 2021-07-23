@@ -60,8 +60,6 @@ contract HairVault is Ownable, Pausable {
     event Deposit(address indexed sender, uint256 amount, uint256 shares, uint256 lastDepositedTime);
     event Withdraw(address indexed sender, uint256 amount, uint256 shares);
     event Harvest(address indexed sender, uint256 performanceFee, uint256 callFee);
-    event Pause();
-    event Unpause();
 
     /**
      * @notice Constructor
@@ -243,7 +241,6 @@ contract HairVault is Ownable, Pausable {
      */
     function pause() external onlyAdmin whenNotPaused {
         _pause();
-        emit Pause();
     }
 
     /**
@@ -252,7 +249,6 @@ contract HairVault is Ownable, Pausable {
      */
     function unpause() external onlyAdmin whenPaused {
         _unpause();
-        emit Unpause();
     }
 
     /**

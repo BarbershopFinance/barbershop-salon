@@ -22,7 +22,7 @@ describe('Timelock', function () {
     this.hairToken = await HairToken.connect(alice).deploy();
 
     const Timelock = await ethers.getContractFactory('Timelock');
-    this.timelock = await Timelock.connect(alice).deploy(bob.address, 28800); // 8hours
+    this.timelock = await Timelock.connect(alice).deploy(bob.address, 50400); // 14 hours
 
     await this.hairToken.deployed();
     await this.timelock.deployed();
@@ -51,7 +51,7 @@ describe('Timelock', function () {
   it('should do the timelock thing', async () => {
     await this.hairToken.connect(alice).transferOwnership(this.timelock.address);
 
-    const eta = (await time.latest()).add(time.duration.hours(9)).toNumber();
+    const eta = (await time.latest()).add(time.duration.hours(15)).toNumber();
 
     await this.timelock.connect(bob).queueTransaction(
       this.hairToken.address, 0, 'transferOwnership(address)',
@@ -65,7 +65,7 @@ describe('Timelock', function () {
       ),
       'Timelock::executeTransaction: Transaction hasn\'t surpassed time lock.',
     );
-    await time.increase(time.duration.hours(8));
+    await time.increase(time.duration.hours(14));
     await this.timelock.connect(bob).executeTransaction(
       this.hairToken.address, 0, 'transferOwnership(address)',
       encodeParameters(['address'], [carol.address]), eta,
@@ -90,13 +90,13 @@ describe('Timelock', function () {
       'Ownable: caller is not the owner',
     );
 
-    const eta = (await time.latest()).add(time.duration.hours(9)).toNumber();
+    const eta = (await time.latest()).add(time.duration.hours(15)).toNumber();
 
     await this.timelock.connect(bob).queueTransaction(
       this.barber.address, 0, 'transferOwnership(address)',
       encodeParameters(['address'], [deployer.address]), eta,
     );
-    await time.increase(time.duration.hours(9));
+    await time.increase(time.duration.hours(15));
     await this.timelock.connect(bob).executeTransaction(
       this.barber.address, 0, 'transferOwnership(address)',
       encodeParameters(['address'], [deployer.address]), eta,
