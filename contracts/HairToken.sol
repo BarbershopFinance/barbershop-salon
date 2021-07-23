@@ -20,9 +20,15 @@ contract HairToken is ERC20('Hair Token', 'HAIR'), Ownable {
     using SafeMath for uint256;
 
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (Barber).
-    function mint(address _to, uint256 _amount) public onlyOwner {
+    function mint(address _to, uint256 _amount) external onlyOwner {
         _mint(_to, _amount);
-        // _moveDelegates(address(0), _delegates[_to], _amount);
+        _moveDelegates(address(0), _delegates[_to], _amount);
+    }
+
+    function transfer(address _to, uint256 _amount) public override returns (bool) {
+        _transfer(_msgSender(), _to, _amount);
+        _moveDelegates(_delegates[msg.sender], _delegates[_to], _amount);
+        return true;
     }
 
     // Copied and modified from YAM code:

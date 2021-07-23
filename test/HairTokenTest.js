@@ -80,7 +80,7 @@ describe('HairToken', function () {
     });
   });
 
-  describe('Delegation power attack', async function () {
+  describe('Delegation power attack (sushiswap vulnerability) is not possible', async function () {
     it('should multiply delegation power on transfers', async function () {
       await hairToken.mint(deployer.address, 100);
       await hairToken.delegate(carol.address);
@@ -89,7 +89,7 @@ describe('HairToken', function () {
       await hairToken.connect(alice).transfer(bob.address, 100);
       await hairToken.connect(bob).delegate(carol.address);
       const votes = await hairToken.getCurrentVotes(carol.address);
-      console.log('votes', votes.toString());
+      expect(votes).to.equal(100);
     });
   });
 });
