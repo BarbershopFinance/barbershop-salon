@@ -351,16 +351,4 @@ contract HairVault is Ownable, Pausable {
             IBarber(barber).deposit(0, bal);
         }
     }
-
-    /**
-     * @notice Checks if address is a contract
-     * @dev It prevents contract from being targetted
-     */
-    function _isContract(address addr) internal view returns (bool) {
-        uint256 size;
-        assembly {
-            size := extcodesize(addr)
-        }
-        return size > 0;
-    }
 }
