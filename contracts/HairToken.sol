@@ -27,7 +27,7 @@ contract HairToken is ERC20('Hair Token', 'HAIR'), Ownable {
     /// @notice Moves delegates only on token transfers. Prevents the sushi delegation double spend vuln
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
-        _moveDelegates(from, to, amount);
+        _moveDelegates(_delegates[from], _delegates[to], amount);
     }
 
     // Copied and modified from YAM code:

@@ -97,7 +97,6 @@ contract HairVault is Ownable, Pausable {
      * @notice Checks if the msg.sender is a contract or a proxy
      */
     modifier notContract() {
-        require(!Address.isContract(msg.sender), 'contract not allowed');
         require(msg.sender == tx.origin, "proxy contract not allowed");
         _;
     }
@@ -351,5 +350,17 @@ contract HairVault is Ownable, Pausable {
         if (bal > 0) {
             IBarber(barber).deposit(0, bal);
         }
+    }
+
+    /**
+     * @notice Checks if address is a contract
+     * @dev It prevents contract from being targetted
+     */
+    function _isContract(address addr) internal view returns (bool) {
+        uint256 size;
+        assembly {
+            size := extcodesize(addr)
+        }
+        return size > 0;
     }
 }
