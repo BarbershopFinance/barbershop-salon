@@ -118,11 +118,12 @@ describe('Barber', function (...args) {
     expect((await this.barber.devAddress()).valueOf()).to.equal(alice.address);
   });
 
-  it('can update the emissions rate', async () => {
-    // barber_toRemove:: - this should end up changing to whatever we decide to do at launch!
+  it('can update the emissions rate but only to a max of 50', async () => {
     expect(await this.barber.hairPerBlock()).to.equal(1000);
-    expect(await this.barber.updateEmissionRate(420)).to.emit(this.barber, 'UpdateEmissionRate');
-    expect(await this.barber.hairPerBlock()).to.equal(420);
+    expect(await this.barber.updateEmissionRate(20)).to.emit(this.barber, 'UpdateEmissionRate');
+    expect(await this.barber.hairPerBlock()).to.equal(20);
+
+    await expectRevert(this.barber.updateEmissionRate(51), 'updateEmissionRate: too high');
   });
 
   it('previous fee address can change the fee address', async () => {

@@ -19,10 +19,15 @@ import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 contract HairToken is ERC20('Hair Token', 'HAIR'), Ownable {
     using SafeMath for uint256;
 
-    /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (Barber).
-    function mint(address _to, uint256 _amount) public onlyOwner {
-        _mint(_to, _amount);
-        _moveDelegates(address(0), _delegates[_to], _amount);
+    /// @notice Creates `amount` token to `to`. Must only be called by the owner (Barber)
+    function mint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
+    }
+
+    /// @notice Moves delegates only on token transfers. Prevents the sushi delegation double spend vuln
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
+        _moveDelegates(_delegates[from], _delegates[to], amount);
     }
 
     // Copied and modified from YAM code:
