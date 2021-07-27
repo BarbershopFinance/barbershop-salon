@@ -1,6 +1,7 @@
 const { expectRevert, time } = require('@openzeppelin/test-helpers');
 const { ethers } = require('hardhat');
 const { expect } = require('chai');
+const { BigNumber: BN } = require('@ethersproject/bignumber');
 
 describe('Barber', function (...args) {
   let MockTokenFactory;
@@ -118,12 +119,22 @@ describe('Barber', function (...args) {
     expect((await this.barber.devAddress()).valueOf()).to.equal(alice.address);
   });
 
-  it('can update the emissions rate but only to a max of 50', async () => {
+  it('can update the emissions rate', async () => {
     expect(await this.barber.hairPerBlock()).to.equal(1000);
     expect(await this.barber.updateEmissionRate(20)).to.emit(this.barber, 'UpdateEmissionRate');
     expect(await this.barber.hairPerBlock()).to.equal(20);
+  });
 
-    await expectRevert(this.barber.updateEmissionRate(51), 'updateEmissionRate: too high');
+  it('can also work with big numbers. The max emissions rate is 50 hair at base 18', async () => {
+    expect(await this.barber.hairPerBlock()).to.equal(1000);
+
+    const overHairPerBlock = BN.from(51).mul(BN.from(String(10 ** 18)));
+    await expectRevert(this.barber.updateEmissionRate(overHairPerBlock), 'updateEmissionRate: too high');
+
+    const underHairPerBlock = BN.from(50).mul(BN.from(String(10 ** 18)));
+    expect(await this.barber.updateEmissionRate(underHairPerBlock)).to.emit(this.barber, 'UpdateEmissionRate');
+
+    await expectRevert(this.barber.updateEmissionRate('50000000000000000001'), 'updateEmissionRate: too high');
   });
 
   it('previous fee address can change the fee address', async () => {

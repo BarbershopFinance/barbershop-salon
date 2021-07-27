@@ -62,7 +62,8 @@ contract Barber is Ownable, ReentrancyGuard {
     // HAIR tokens created per block.
     uint256 public hairPerBlock;
     // Maximum hair per block.
-    uint256 public constant MAX_HAIR_PER_BLOCK = 50;
+    uint256 public constant MAX_HAIR_PER_BLOCK = 50e18; // 50 hair
+    
     // Deposit Fee address
     address public feeAddress;
 
