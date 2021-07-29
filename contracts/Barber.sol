@@ -188,6 +188,7 @@ contract Barber is Ownable, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
+        uint256 finalDepositAmount = 0;
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accHairPerShare).div(1e18).sub(user.rewardDebt);
             if (pending > 0) {
@@ -195,17 +196,20 @@ contract Barber is Ownable, ReentrancyGuard {
             }
         }
         if (_amount > 0) {
+            // Do before and after balance check to account for reflect fees
+            uint256 preStakeBalance = pool.lpToken.balanceOf(address(this));
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+            finalDepositAmount = pool.lpToken.balanceOf(address(this)) - preStakeBalance;
             if (pool.depositFeeBP > 0) {
-                uint256 depositFee = _amount.mul(pool.depositFeeBP).div(10000);
+                uint256 depositFee = finalDepositAmount.mul(pool.depositFeeBP).div(10000);
                 pool.lpToken.safeTransfer(feeAddress, depositFee);
-                user.amount = user.amount.add(_amount).sub(depositFee);
+                user.amount = user.amount.add(finalDepositAmount).sub(depositFee);
             } else {
-                user.amount = user.amount.add(_amount);
+                user.amount = user.amount.add(finalDepositAmount);
             }
         }
         user.rewardDebt = user.amount.mul(pool.accHairPerShare).div(1e18);
-        emit Deposit(msg.sender, _pid, _amount);
+        emit Deposit(msg.sender, _pid, finalDepositAmount);
     }
 
     // Withdraw LP tokens from Barber.
