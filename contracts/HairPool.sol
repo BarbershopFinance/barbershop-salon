@@ -40,7 +40,7 @@ contract HairPool is Ownable {
     IERC20 public earningToken;
     // Reward tokens created per block.
     uint256 public rewardPerBlock;
-    // Keep track of number of HAIR tokens staked
+    // Keep track of number of HAIR tokens staked.
     uint256 public totalStaked = 0;
     // Info of the pool.
     PoolInfo public poolInfo;
