@@ -205,7 +205,7 @@ contract HairPool is Ownable {
     }
 
     /**
-     * @dev Obtain the rewrad balance of this contract
+     * @dev Obtain the reward balance of this contract
      * @return wei balance of contract
      */
     function rewardBalance() public view returns (uint256) {
