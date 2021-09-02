@@ -19,7 +19,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract HairPool is Ownable, Initializable {
+contract HairPool is Ownable, Initializable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // Info of each user
@@ -146,7 +146,7 @@ contract HairPool is Ownable, Initializable {
      * @dev Deposit HAIR token into the contract to earn rewards
      * @param _amount The amount of HAIR to deposit
      */
-    function deposit(uint256 _amount) public {
+    function deposit(uint256 _amount) public nonReentrant {
         UserInfo storage user = userInfo[msg.sender];
         uint256 finalDepositAmount = 0;
         updatePool();
@@ -179,7 +179,7 @@ contract HairPool is Ownable, Initializable {
      * @dev Withdraw rewards and/or HAIR. Pass a 0 amount to withdraw only rewards
      * @param _amount The amount of HAIR to withdraw
      */
-    function withdraw(uint256 _amount) public {
+    function withdraw(uint256 _amount) public nonReentrant {
         UserInfo storage user = userInfo[msg.sender];
         require(user.amount >= _amount, "Withdraw amount exceeds balance");
         updatePool();
@@ -220,7 +220,7 @@ contract HairPool is Ownable, Initializable {
      * @dev Deposit rewards into contract
      * @param _amount amount of tokens to deposit
      */
-    function depositRewards(uint256 _amount) external {
+    function depositRewards(uint256 _amount) external nonReentrant {
         require(_amount > 0, 'Deposit value must be greater than 0.');
         earningToken.safeTransferFrom(address(msg.sender), address(this), _amount);
         emit DepositRewards(_amount);
@@ -258,7 +258,7 @@ contract HairPool is Ownable, Initializable {
     /* Emergency Functions */
 
     // Withdraw without caring about rewards. EMERGENCY ONLY
-    function emergencyWithdraw() external {
+    function emergencyWithdraw() external nonReentrant {
         UserInfo storage user = userInfo[msg.sender];
         hairToken.safeTransfer(address(msg.sender), user.amount);
         totalStaked = totalStaked - user.amount;
@@ -284,5 +284,4 @@ contract HairPool is Ownable, Initializable {
         token.transfer(msg.sender, balance);
         emit EmergencySweepWithdraw(msg.sender, token, balance);
     }
-
 }
