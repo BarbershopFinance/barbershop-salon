@@ -65,7 +65,7 @@ With it we can do something like this:
 It spits out a flat contract which we can upload to Polygonscan to the `/out` folder.
 
 ## Contract addresses
-Looking for our contracts on Polygon Mainnet?
+The contracts are deployed on the [Polygon](https://polygon.technology/) Mainnet
 |Contract|Address|
 |---|---|
 |Hair Token|`0x100a947f51fa3f1dcdf97f3ae507a72603cae63c`|
