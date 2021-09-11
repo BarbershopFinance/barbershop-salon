@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-/* Stop by for a cut at Barbershop.Finance!
+/* Post your bulletin at Barbershop.Finance!
 
 dP                         dP                                  dP
 88                         88                                  88
@@ -49,16 +49,18 @@ contract Bulletin is Ownable, ReentrancyGuard {
     address private burnAddress = 0x000000000000000000000000000000000000dEaD;
 
     IERC20 public hairToken;
+    uint256 public totalHairBurned;
 
-    uint256 public constant SQUARES_PER_LEVEL = 16;
+    uint256 public squaresPerLevel;
     uint256 public constant MAX_MESSAGE_LENGTH = 152;
     uint256 public constant STARTING_PRICE = 100e18; // 100 hair
     
     uint256 public numLevels;
     mapping (uint256 => mapping (uint256 => Square)) public levels;
 
-    constructor(IERC20 _hairToken) {
+    constructor(IERC20 _hairToken, uint256 _squaresPerLevel) {
         hairToken = _hairToken;
+        squaresPerLevel = _squaresPerLevel;
     }
 
     /**
@@ -66,7 +68,7 @@ contract Bulletin is Ownable, ReentrancyGuard {
      * @return Current rate.
      */
     function currentRate() public view returns (uint256) {
-        return 10 * numLevels * STARTING_PRICE;
+        return 10 ** numLevels * STARTING_PRICE;
     }
 
     // Users who have been censored due to inappropriate content
@@ -76,26 +78,12 @@ contract Bulletin is Ownable, ReentrancyGuard {
         _;
     }
 
-    /**
-     * @dev A square can only be purchased by one address per level.
-     * @param _sid The square id.
-     * @return Whether the square is available for purchase
-     */
-    function isValidSquare(uint256 _sid) internal view returns (bool) {
-        require(_sid < SQUARES_PER_LEVEL);
-        // BoardLevel storage boardLevel = allLevels[numLevels];
+    // modifier squareUnclaimed(uint256 _sid) {
+    //     uint256 index = levels[numLevels][_sid].; // is 0 if not explicitly set
+    //     require(personIds[index] == _id, "Person does not exist.");
 
-        // for (uint256 idx = 0; idx < boardLevel.squares.length; ++idx) {
-        //     Square memory sq = boardLevel.squares[idx]; 
-
-        //     // user already has a square this level, or square is already taken
-        //     if (sq.sid == _sid || sq.userAddress == msg.sender) {
-        //         return false;
-        //     }
-        // }
-
-        return true;
-    }
+    //     _;
+    // }
 
     /**
      * @dev Buying a square consists of burning an amount of tokens, dependent on current level.
@@ -111,19 +99,28 @@ contract Bulletin is Ownable, ReentrancyGuard {
         string calldata _image,
         string calldata _link
     ) external nonReentrant allowedAddress {
-        require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "text too long");
-        require(isValidSquare(_squareId));
+        require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "text over 152 char limit");
+        require(_squareId < squaresPerLevel);
+        require(levels[numLevels][_squareId].userAddress == address(0), "square already claimed");
 
-        // BoardLevel memory boardLevel = allLevels[numLevels];
+        for (uint256 idx = 0; idx < squaresPerLevel; ++idx) {
+            Square memory sq = levels[numLevels][idx]; 
+            if (sq.userAddress == msg.sender) {
+                revert('one square per level per address');
+            }
+        }
+
+        // // BoardLevel memory boardLevel = allLevels[numLevels];
         uint256 amount = currentRate();
-        // do i need a check?
-        // require(_value <= balances[msg.sender]);
+        // // do i need a check?
+        // // require(_value <= balances[msg.sender]);
         hairToken.safeTransferFrom(msg.sender, burnAddress, amount);
+        totalHairBurned = totalHairBurned + amount;
 
-        Square storage sq = levels[numLevels][_squareId];
-        sq.text = _text;
-        sq.image = _image;
-        sq.link = _link;
+        // Square storage sq = levels[numLevels][_squareId];
+        // sq.text = _text;
+        // sq.image = _image;
+        // sq.link = _link;
 
         emit SquarePurchased(msg.sender, _squareId, numLevels, _text, _image, _link);
     }
@@ -138,11 +135,5 @@ contract Bulletin is Ownable, ReentrancyGuard {
         // require(allFull);
         // do we need this?
         // BoardLevel storage level = 
-    }
-
-    // View function to see total HAIR burned on frontend.
-    function totalHairBurned() external view returns (uint256) {
-        // todo: update
-        return 100;
     }
 }
