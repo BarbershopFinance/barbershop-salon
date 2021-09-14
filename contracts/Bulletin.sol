@@ -27,14 +27,8 @@ contract Bulletin is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    event SquarePurchased(
-        uint256 indexed sid,
-        address indexed userAddress,
-        uint256 amount,
-        string text,
-        string image,
-        string link
-    );
+    event LevelComplete(uint256 level);
+    event SquarePurchased(uint256 indexed sid, address indexed userAddress, uint256 amount, string text, string image, string link);
 
     struct Square {
         uint256 sid;
@@ -93,14 +87,14 @@ contract Bulletin is Ownable, ReentrancyGuard {
         string calldata _image,
         string calldata _link
     ) external nonReentrant allowedAddress {
-        require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "text over 152 char limit");
-        require(_squareId < squaresPerLevel * currentLevel, "square id too high");
-        require(_squareId >= squaresPerLevel * (currentLevel - 1), "square id too low");
+        require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "invalid square: text over 152 char limit");
+        require(_squareId < squaresPerLevel * currentLevel, "invalid square: level not started");
+        require(_squareId >= squaresPerLevel * (currentLevel - 1), "invalid square: level complete");
         require(squares[_squareId].userAddress == address(0), "invalid square: already claimed");
 
         for (uint256 idx = 0; idx < squaresPerLevel; ++idx) {
-            Square memory sq = squares[idx * currentLevel]; 
-            if (sq.userAddress == msg.sender) {
+            Square memory s = squares[idx * currentLevel]; 
+            if (s.userAddress == msg.sender) {
                 revert('invalid square: one per level per address');
             }
         }
@@ -119,6 +113,8 @@ contract Bulletin is Ownable, ReentrancyGuard {
         sq.link = _link;
 
         emit SquarePurchased(_squareId, msg.sender, amount, _text, _image, _link);
+
+        determineLevelCompletion();
     }
 
     // Square can be updated until next level starts.
@@ -130,6 +126,25 @@ contract Bulletin is Ownable, ReentrancyGuard {
     function addNewLevel() internal {
         // require(allFull);
         // do we need this?
-        // BoardLevel storage level = 
+        // BoardLevel storage level = address(0)
+    }
+
+    /**
+     * @dev A level is completed when all squares have been purchased.
+     */
+    function determineLevelCompletion() internal {
+        uint256 counter = 0;
+        for (uint256 idx = 0; idx < squaresPerLevel; ++idx) {
+            Square memory s = squares[idx * currentLevel]; 
+            if (s.userAddress != address(0)) {
+                counter++;
+            }
+        }
+
+        if (counter == squaresPerLevel) {
+            emit LevelComplete(currentLevel);
+            currentLevel++;
+        }
+
     }
 }

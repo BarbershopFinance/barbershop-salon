@@ -96,6 +96,7 @@ module.exports = {
     alice: 4,
     bob: 5,
     carol: 6,
+    dan: 7,
   },
   paths: {
     sources: './contracts',

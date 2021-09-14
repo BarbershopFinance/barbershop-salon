@@ -14,10 +14,11 @@ describe('Bulletin', function () {
   let alice;
   let bob;
   let carol;
+  let dan;
   let deployer;
 
   beforeEach(async () => {
-    ({ deployer, dev, fee, alice, bob, carol } = await ethers.getNamedSigners());
+    ({ deployer, alice, bob, carol, dan } = await ethers.getNamedSigners());
 
     HairToken = await ethers.getContractFactory('HairToken');
     hairToken = await HairToken.deploy();
@@ -26,6 +27,7 @@ describe('Bulletin', function () {
 
     await hairToken.mint(alice.address, BN.from(10000).mul(BN.from(String(10 ** 18))));
     await hairToken.mint(bob.address, BN.from(10000).mul(BN.from(String(10 ** 18))));
+    await hairToken.mint(carol.address, BN.from(10000).mul(BN.from(String(10 ** 18))));
 
     Bulletin = await ethers.getContractFactory('Bulletin');
     bulletin = await Bulletin.deploy(hairToken.address, 2);
@@ -34,6 +36,7 @@ describe('Bulletin', function () {
 
     await hairToken.connect(alice).approve(bulletin.address, maxAllowance);
     await hairToken.connect(bob).approve(bulletin.address, maxAllowance);
+    await hairToken.connect(carol).approve(bulletin.address, maxAllowance);
   });
 
   // describe('The contract basics', () => {
@@ -56,9 +59,22 @@ describe('Bulletin', function () {
   // });
 
   describe('Buying a square', () => {
-    it('When text is too long it will fail', async function () {
-      await hairToken.connect(alice).approve(bulletin.address, maxAllowance);
+    it('Without HAIR in wallet the transaction fails', async function () {
+      await hairToken.connect(dan).approve(bulletin.address, maxAllowance);
 
+      expect(await hairToken.balanceOf(dan.address)).to.equal(0);
+
+      await expectRevert(bulletin.connect(dan).buySquare(
+        0,
+        '',
+        '',
+        '',
+      ), 'ERC20: transfer amount exceeds balance');
+
+      expect(await hairToken.balanceOf(dan.address)).to.equal(0);
+    });
+
+    it('When text is too long it will fail', async function () {
       await expectRevert(bulletin.connect(alice).buySquare(
         0,
         // eslint-disable-next-line max-len
@@ -83,9 +99,6 @@ describe('Bulletin', function () {
     });
 
     it('Only one owner of a square', async function () {
-      await hairToken.connect(alice).approve(bulletin.address, maxAllowance);
-      await hairToken.connect(bob).approve(bulletin.address, maxAllowance);
-
       expect(await bulletin.connect(alice).buySquare(
         0,
         '',
@@ -108,9 +121,6 @@ describe('Bulletin', function () {
     });
 
     it('Only one square per level per address', async function () {
-      await hairToken.connect(alice).approve(bulletin.address, maxAllowance);
-      await hairToken.connect(bob).approve(bulletin.address, maxAllowance);
-
       expect(await bulletin.connect(alice).buySquare(
         0,
         '',
@@ -128,8 +138,6 @@ describe('Bulletin', function () {
     });
 
     it('Passing calldata for the square', async function () {
-      await hairToken.connect(alice).approve(bulletin.address, maxAllowance);
-
       expect(await bulletin.connect(alice).buySquare(
         0,
         'my message',
@@ -149,38 +157,45 @@ describe('Bulletin', function () {
     });
   });
 
-  // describe('Handles multiple levels', () => {
-  //   it('Burn price raises each level', async function () {
-  //     await hairToken.connect(alice).approve(bulletin.address, maxAllowance);
+  describe('Handles multiple levels', () => {
+    it('Cannot buy on a level not yet reached', async function () {
+      await expectRevert(bulletin.connect(alice).buySquare(
+        3,
+        '',
+        '',
+        '',
+      ), 'invalid square: level not started');
+    });
 
-  //     expect(await bulletin.connect(alice).buySquare(
-  //       0,
-  //       'my message',
-  //       'https://picsum.photos/200/300',
-  //       'https://barbershop.finance',
-  //     )).to.emit(bulletin.address, 'SquarePurchased');
+    it('Burn price raises each level', async function () {
+      expect(await bulletin.connect(alice).buySquare(
+        0,
+        'my message',
+        'https://picsum.photos/200/300',
+        'https://barbershop.finance',
+      )).to.emit(bulletin.address, 'SquarePurchased');
 
-  //     expect(await bulletin.totalHairBurned()).to.equal(BN.from(String(100 * 10 ** 18)));
+      expect(await bulletin.totalHairBurned()).to.equal(BN.from(String(100 * 10 ** 18)));
 
-  //     expect(await bulletin.connect(bob).buySquare(
-  //       1,
-  //       'my message',
-  //       'https://picsum.photos/200/300',
-  //       'https://barbershop.finance',
-  //     )).to.emit(bulletin.address, 'SquarePurchased');
+      expect(await bulletin.connect(bob).buySquare(
+        1,
+        'my message',
+        'https://picsum.photos/200/300',
+        'https://barbershop.finance',
+      )).to.emit(bulletin.address, 'SquarePurchased');
 
-  //     expect(await bulletin.totalHairBurned()).to.equal(BN.from(String(200 * 10 ** 18)));
+      expect(await bulletin.totalHairBurned()).to.equal(BN.from(String(200 * 10 ** 18)));
 
-  //     expect(await bulletin.connect(carol).buySquare(
-  //       0,
-  //       'my message',
-  //       'https://picsum.photos/200/300',
-  //       'https://barbershop.finance',
-  //     )).to.emit(bulletin.address, 'SquarePurchased');
+      // expect(await bulletin.connect(carol).buySquare(
+      //   2,
+      //   'my message',
+      //   'https://picsum.photos/200/300',
+      //   'https://barbershop.finance',
+      // )).to.emit(bulletin.address, 'SquarePurchased');
 
-  //     expect(await bulletin.totalHairBurned()).to.equal(BN.from(String(400 * 10 ** 18)));
-  //   });
-  // });
+      // expect(await bulletin.totalHairBurned()).to.equal(BN.from(String(400 * 10 ** 18)));
+    });
+  });
 
   // describe('Supply', () => {
   //   context('When there is no supply', () => {
