@@ -28,22 +28,23 @@ contract Bulletin is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event SquarePurchased(
-        address indexed userAddress,
         uint256 indexed sid,
-        uint256 indexed level,
+        address indexed userAddress,
+        uint256 amount,
         string text,
         string image,
         string link
     );
 
     struct Square {
-        address userAddress;
-        uint256 amountBurned;
-
         uint256 sid;
-        string link;
-        string image;
+
+        address userAddress;
+        uint256 amount;
+
         string text;
+        string image;
+        string link;
     }
 
     address private burnAddress = 0x000000000000000000000000000000000000dEaD;
@@ -55,8 +56,8 @@ contract Bulletin is Ownable, ReentrancyGuard {
     uint256 public constant MAX_MESSAGE_LENGTH = 152;
     uint256 public constant STARTING_PRICE = 100e18; // 100 hair
     
-    uint256 public numLevels;
-    mapping (uint256 => mapping (uint256 => Square)) public levels;
+    uint256 public currentLevel = 1;
+    mapping (uint256 => Square) public squares;
 
     constructor(IERC20 _hairToken, uint256 _squaresPerLevel) {
         hairToken = _hairToken;
@@ -68,7 +69,7 @@ contract Bulletin is Ownable, ReentrancyGuard {
      * @return Current rate.
      */
     function currentRate() public view returns (uint256) {
-        return 10 ** numLevels * STARTING_PRICE;
+        return 10 ** (currentLevel - 1) * STARTING_PRICE;
     }
 
     // Users who have been censored due to inappropriate content
@@ -77,13 +78,6 @@ contract Bulletin is Ownable, ReentrancyGuard {
         require(!blocklist[msg.sender], "blocklist: address not allowed");
         _;
     }
-
-    // modifier squareUnclaimed(uint256 _sid) {
-    //     uint256 index = levels[numLevels][_sid].; // is 0 if not explicitly set
-    //     require(personIds[index] == _id, "Person does not exist.");
-
-    //     _;
-    // }
 
     /**
      * @dev Buying a square consists of burning an amount of tokens, dependent on current level.
@@ -100,32 +94,34 @@ contract Bulletin is Ownable, ReentrancyGuard {
         string calldata _link
     ) external nonReentrant allowedAddress {
         require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "text over 152 char limit");
-        require(_squareId < squaresPerLevel);
-        require(levels[numLevels][_squareId].userAddress == address(0), "square already claimed");
+        require(_squareId < squaresPerLevel * currentLevel, "square id too high");
+        require(_squareId >= squaresPerLevel * (currentLevel - 1), "square id too low");
+        require(squares[_squareId].userAddress == address(0), "invalid square: already claimed");
 
         for (uint256 idx = 0; idx < squaresPerLevel; ++idx) {
-            Square memory sq = levels[numLevels][idx]; 
+            Square memory sq = squares[idx * currentLevel]; 
             if (sq.userAddress == msg.sender) {
-                revert('one square per level per address');
+                revert('invalid square: one per level per address');
             }
         }
 
-        // // BoardLevel memory boardLevel = allLevels[numLevels];
         uint256 amount = currentRate();
         // // do i need a check?
         // // require(_value <= balances[msg.sender]);
         hairToken.safeTransferFrom(msg.sender, burnAddress, amount);
         totalHairBurned = totalHairBurned + amount;
 
-        // Square storage sq = levels[numLevels][_squareId];
-        // sq.text = _text;
-        // sq.image = _image;
-        // sq.link = _link;
+        Square storage sq = squares[_squareId];
+        sq.userAddress = msg.sender;
+        sq.amount = amount;
+        sq.text = _text;
+        sq.image = _image;
+        sq.link = _link;
 
-        emit SquarePurchased(msg.sender, _squareId, numLevels, _text, _image, _link);
+        emit SquarePurchased(_squareId, msg.sender, amount, _text, _image, _link);
     }
 
-    // Square can be updated until someone else takes it
+    // Square can be updated until next level starts.
     // function updateSquare(uint _idx, string _link, string _image, string _title, bool _NSFW) {
     //     // do we want this?
     // }
