@@ -28,6 +28,7 @@ contract Bulletin is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event LevelComplete(uint256 level);
+    event UserBannned(address bannedAddress);
     event SquarePurchased(uint256 indexed sid, address indexed userAddress, uint256 amount, string text, string image, string link);
 
     struct Square {
@@ -66,11 +67,22 @@ contract Bulletin is Ownable, ReentrancyGuard {
         return 10 ** (currentLevel - 1) * STARTING_PRICE;
     }
 
-    // Users who have been censored due to inappropriate content
     mapping (address => bool) public blocklist;
+    /**
+     * @dev Users who have been censored due to inappropriate content
+     */
     modifier allowedAddress() {
         require(!blocklist[msg.sender], "blocklist: address not allowed");
         _;
+    }
+
+    /**
+     * @dev Each level increases the burn price by a factor of 10.
+     * @param _bannedAddress The address to add to blocklist
+     */
+    function addToBlocklist(address _bannedAddress) onlyOwner external onlyOwner () {
+        blocklist[_bannedAddress] = true;
+        emit UserBannned(_bannedAddress);
     }
 
     /**
@@ -92,16 +104,7 @@ contract Bulletin is Ownable, ReentrancyGuard {
         require(_squareId >= squaresPerLevel * (currentLevel - 1), "invalid square: level complete");
         require(squares[_squareId].userAddress == address(0), "invalid square: already claimed");
 
-        for (uint256 idx = 0; idx < squaresPerLevel; ++idx) {
-            Square memory s = squares[idx * currentLevel]; 
-            if (s.userAddress == msg.sender) {
-                revert('invalid square: one per level per address');
-            }
-        }
-
         uint256 amount = currentRate();
-        // // do i need a check?
-        // // require(_value <= balances[msg.sender]);
         hairToken.safeTransferFrom(msg.sender, burnAddress, amount);
         totalHairBurned = totalHairBurned + amount;
 
@@ -117,26 +120,14 @@ contract Bulletin is Ownable, ReentrancyGuard {
         determineLevelCompletion();
     }
 
-    // Square can be updated until next level starts.
-    // function updateSquare(uint _idx, string _link, string _image, string _title, bool _NSFW) {
-    //     // do we want this?
-    // }
-
-    // Add a new lp to the pool. Can only be called by the owner.
-    function addNewLevel() internal {
-        // require(allFull);
-        // do we need this?
-        // BoardLevel storage level = address(0)
-    }
-
     /**
      * @dev A level is completed when all squares have been purchased.
      */
     function determineLevelCompletion() internal {
         uint256 counter = 0;
         for (uint256 idx = 0; idx < squaresPerLevel; ++idx) {
-            Square memory s = squares[idx * currentLevel]; 
-            if (s.userAddress != address(0)) {
+            Square memory sq = squares[(currentLevel - 1) * squaresPerLevel + idx]; 
+            if (sq.userAddress != address(0)) {
                 counter++;
             }
         }
@@ -145,6 +136,5 @@ contract Bulletin is Ownable, ReentrancyGuard {
             emit LevelComplete(currentLevel);
             currentLevel++;
         }
-
     }
 }
