@@ -18,7 +18,6 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import './HairToken.sol';
 
 // Note This Bulletin is meant to be decentralized and encourages free speech.
 // That said, the owner has the ability to censor addresses who post inappropriate content
@@ -28,7 +27,7 @@ contract Bulletin is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event LevelComplete(uint256 level);
-    event UserBannned(address bannedAddress);
+    event UserBanned(address bannedAddress);
     event SquarePurchased(uint256 indexed sid, address indexed userAddress, uint256 amount, string text, string image, string link);
 
     struct Square {
@@ -48,9 +47,8 @@ contract Bulletin is Ownable, ReentrancyGuard {
     uint256 public totalHairBurned;
 
     uint256 public squaresPerLevel;
-    uint256 public constant MAX_MESSAGE_LENGTH = 152;
+    uint256 public constant MAX_MESSAGE_LENGTH = 42;
     uint256 public constant STARTING_PRICE = 100e18; // 100 hair
-    
     uint256 public currentLevel = 1;
     mapping (uint256 => Square) public squares;
 
@@ -82,14 +80,17 @@ contract Bulletin is Ownable, ReentrancyGuard {
      */
     function addToBlocklist(address _bannedAddress) onlyOwner external onlyOwner () {
         blocklist[_bannedAddress] = true;
-        emit UserBannned(_bannedAddress);
+        emit UserBanned(_bannedAddress);
     }
 
     /**
      * @dev Buying a square consists of burning an amount of tokens, dependent on current level.
-            And providing the contents of the square.
+     *      And providing the contents of the square.
+     * @notice It is up to the frontend as to how to display the sqaures, but for pursposes of Barbershop,
+     *         when each level starts, any square is available for purchase. This means that
+     *         the squares purchased later in a level have a shorter shelf life / bulletin display.
      * @param _squareId The desired square.
-     * @param _text Message. 152 character max.
+     * @param _text Message. 42 character max.
      * @param _link Link in url form.
      * @param _image Image in url form.
      */
@@ -99,7 +100,7 @@ contract Bulletin is Ownable, ReentrancyGuard {
         string calldata _image,
         string calldata _link
     ) external nonReentrant allowedAddress {
-        require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "invalid square: text over 152 char limit");
+        require(bytes(_text).length <= MAX_MESSAGE_LENGTH, "invalid square: text over 42 char limit");
         require(_squareId < squaresPerLevel * currentLevel, "invalid square: level not started");
         require(_squareId >= squaresPerLevel * (currentLevel - 1), "invalid square: level complete");
         require(squares[_squareId].userAddress == address(0), "invalid square: already claimed");

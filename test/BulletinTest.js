@@ -77,11 +77,10 @@ describe('Bulletin', function () {
     it('When text is too long it will fail', async function () {
       await expectRevert(bulletin.connect(alice).buySquare(
         0,
-        // eslint-disable-next-line max-len
-        'abcdefg hijklmnop qrstuvw xyz abcdefg hijklmnop qrstuvw xyz abcdefg hijklmnop qrstuvw xyz abcdefg hijklmnop qrstuvw xyz abcdefg hijklmnop qrstuvw xyz abcdefg hijklmnop qrstuvw xyz',
+        'abcdefg hijklmnop qrstuvw xyz abcdefg hijklmnop qrstuvw',
         '',
         '',
-      ), 'text over 152 char limit');
+      ), 'text over 42 char limit');
     });
 
     it('Claiming a square without any params is ok', async function () {
