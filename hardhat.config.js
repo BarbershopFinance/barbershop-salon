@@ -32,6 +32,9 @@ module.exports = {
         runs: 200,
       },
     },
+    compilers: [
+      { version: '0.8.6' },
+    ],
   },
   defaultNetwork: 'hardhat',
   gasReporter: {
