@@ -24,10 +24,10 @@ abstract contract BaseStrategy is Ownable, ReentrancyGuard, Pausable {
     address public uniRouterAddress;
     address public constant usdcAddress = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
     address public constant fishAddress = 0x3a3Df212b7AA91Aa0402B9035b098891d276572B;
-    address public constant rewardAddress = 0x917FB15E8aAA12264DCBdC15AFef7cD3cE76BA39;
+    address public constant rewardAddress = 0x917FB15E8aAA12264DCBdC15AFef7cD3cE76BA39; // rewardFish
     address public constant withdrawFeeAddress = 0x4879712c5D1A98C0B88Fb700daFF5c65d12Fd729;
     address public constant feeAddress = 0x1cb757f1eB92F25A917CE9a92ED88c1aC0734334;
-    address public vaultChefAddress;
+    address public vaultBarberAddress;
     address public govAddress;
 
     uint256 public lastEarnBlock = block.number;
@@ -143,7 +143,7 @@ abstract contract BaseStrategy is Ownable, ReentrancyGuard, Pausable {
         
         _wantAmt = _wantAmt.sub(withdrawFee);
 
-        IERC20(wantAddress).safeTransfer(vaultChefAddress, _wantAmt);
+        IERC20(wantAddress).safeTransfer(vaultBarberAddress, _wantAmt);
 
         return sharesRemoved;
     }

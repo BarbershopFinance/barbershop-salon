@@ -19,6 +19,6 @@ interface IStrategy {
     // Transfer want tokens autoFarm -> strategy
     function deposit(address _userAddress, uint256 _wantAmt) external returns (uint256);
 
-    // Transfer want tokens strategy -> vaultChef
+    // Transfer want tokens strategy -> vaultBarber
     function withdraw(address _userAddress, uint256 _wantAmt) external returns (uint256);
 }
