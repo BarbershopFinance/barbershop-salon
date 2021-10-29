@@ -14,7 +14,7 @@ require('hardhat-deploy');
 
 require('hardhat-gas-reporter');
 
-const { mnemonic } = require('./secrets.json');
+// const { mnemonic } = require('./secrets.json');
 
 const INFURA_PROJECT_ID = process.env.PRIVATE_KEY;
 
@@ -45,7 +45,7 @@ module.exports = {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
       gasPrice: 20000000000,
-      accounts: { mnemonic: mnemonic },
+      // accounts: { mnemonic: mnemonic },
     },
     development: {
       url: 'http://127.0.0.1:7545',
@@ -60,10 +60,10 @@ module.exports = {
       gas: 2100000,
     },
     maticMainnet: {
-      url: 'https://rpc-mainnet.maticvigil.com',
+      url: 'https://polygon-rpc.com',
       chainId: 137,
       networkId: 137,
-      gas: 5500000,
+      gas: 8000000,
       accounts: {
         mnemonic: `${process.env.MNEMONIC}`,
       },

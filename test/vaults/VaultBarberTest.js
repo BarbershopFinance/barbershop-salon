@@ -11,21 +11,26 @@ describe('HairVault', async function (...args) {
   beforeEach(async () => {
     ({ deployer, dev, fee, alice } = await ethers.getNamedSigners());
 
-    const HairToken = await ethers.getContractFactory('HairToken');
-    this.hairToken = await HairToken.connect(deployer).deploy();
+    const Strategy = await ethers.getContractFactory('StrategyApeSwapLP');
+    this.strategy = await Strategy.connect(deployer).deploy();
 
     const VaultBarber = await ethers.getContractFactory('VaultBarber');
-    this.vaultBarber = await VaultBarber.connect(deployer).deploy();
+    this.vaultBarber = await VaultBarber.connect(deployer).deploy(
+      this.strategy.address,
+      'folicle token',
+      'folicle',
+      0,
+    );
     await this.vaultBarber.deployed();
   });
 
-  it('The contract deploys correctly and starts at 0 pools', async () => {
-    expect(await this.vaultBarber.poolLength()).to.equal(0);
+  it('The contract deploys correctly and starts at 0 available', async () => {
+    expect(await this.vaultBarber.available()).to.equal(0);
   });
 
-  it('Can add pools', async () => {
-    expect(await this.vaultBarber.poolLength()).to.equal(0);
-  });
+  // it('Can add pools', async () => {
+  //   expect(await this.vaultBarber.poolLength()).to.equal(0);
+  // });
 
   // it('Can deposit and withdraw to barber', async () => {
   //   await this.hairToken.connect(alice).approve(this.hairVault.address, 1000);
