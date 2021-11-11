@@ -6,13 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 
-import "../../interfaces/common/IUniswapRouterETH.sol";
-import "../../interfaces/common/IUniswapV2Pair.sol";
-import "../../interfaces/common/IMiniChefV2.sol";
-import "../common/StratManager.sol";
-import "../common/FeeManager.sol";
+import "../interfaces/common/IUniswapRouterETH.sol";
+import "../interfaces/common/IUniswapV2Pair.sol";
+import "../interfaces/common/IMiniChefV2.sol";
 
-contract StrategyApeSwapLP is StratManager, FeeManager {
+import "./common/StratManager.sol";
+import "./common/FeeManager.sol";
+
+contract StrategySushiSwapLP is StratManager, FeeManager {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -27,11 +28,16 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
     address public chef;
     uint256 public poolId;
 
+    uint256 public lastHarvest;
+
     // Routes
     address[] public outputToNativeRoute;
     address[] public nativeToOutputRoute;
     address[] public outputToLp0Route;
     address[] public outputToLp1Route;
+
+    address[] public nativeToHairRoute;
+    address public hairToken = address(0x100A947f51fA3F1dcdF97f3aE507A72603cAE63C);
 
     /**
      * @dev Event that is fired each time someone harvests the strat.
@@ -55,20 +61,20 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
         poolId = _poolId;
         chef = _chef;
 
-        require(_outputToNativeRoute.length >= 2, "first");
+        require(_outputToNativeRoute.length >= 2, "outputToNativeRoute length too short");
         output = _outputToNativeRoute[0];
         native = _outputToNativeRoute[_outputToNativeRoute.length - 1];
         outputToNativeRoute = _outputToNativeRoute;
-        
+
         // setup lp routing
         lpToken0 = IUniswapV2Pair(want).token0();
-        require(_outputToLp0Route[0] == output, "second");
-        require(_outputToLp0Route[_outputToLp0Route.length - 1] == lpToken0, "third");
+        require(_outputToLp0Route[0] == output, "outputToLp0Route to output mismatch");
+        require(_outputToLp0Route[_outputToLp0Route.length - 1] == lpToken0, "outputToLp0Route to output mismatch");
         outputToLp0Route = _outputToLp0Route;
 
         lpToken1 = IUniswapV2Pair(want).token1();
-        require(_outputToLp1Route[0] == output, "fourth");
-        require(_outputToLp1Route[_outputToLp1Route.length - 1] == lpToken1, "fifth");
+        require(_outputToLp1Route[0] == output, "outputToLp1Route to output mismatch");
+        require(_outputToLp1Route[_outputToLp1Route.length - 1] == lpToken1, "outputToLp1Route to lpToken1 mismatch");
         outputToLp1Route = _outputToLp1Route;
 
         nativeToOutputRoute = new address[](_outputToNativeRoute.length);
@@ -106,18 +112,19 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
         if (tx.origin == owner() || paused()) {
             IERC20(want).safeTransfer(vault, wantBal);
         } else {
-            uint256 withdrawalFeeAmount = wantBal.mul(withdrawalFee).div(WITHDRAWAL_MAX);	
+            uint256 withdrawalFeeAmount = wantBal.mul(withdrawalFee).div(WITHDRAWAL_MAX);
             IERC20(want).safeTransfer(vault, wantBal.sub(withdrawalFeeAmount));
         }
     }
 
     // compounds earnings and charges performance fee
-    function harvest() external whenNotPaused {
+    function harvest() external whenNotPaused onlyEOA {
         IMiniChefV2(chef).harvest(poolId, address(this));
         chargeFees();
         addLiquidity();
         deposit();
 
+        lastHarvest = block.timestamp;
         emit StratHarvest(msg.sender);
     }
 
@@ -128,20 +135,28 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
         if (toOutput > 0) {
             IUniswapRouterETH(unirouter).swapExactTokensForTokens(toOutput, 0, nativeToOutputRoute, address(this), block.timestamp);
         }
-        
+
         uint256 toNative = IERC20(output).balanceOf(address(this)).mul(45).div(1000);
         IUniswapRouterETH(unirouter).swapExactTokensForTokens(toNative, 0, outputToNativeRoute, address(this), block.timestamp);
 
         uint256 nativeBal = IERC20(native).balanceOf(address(this));
 
         uint256 callFeeAmount = nativeBal.mul(callFee).div(MAX_FEE);
-        IERC20(native).safeTransfer(tx.origin, callFeeAmount);
+        IERC20(native).safeTransfer(msg.sender, callFeeAmount);
 
         uint256 beefyFeeAmount = nativeBal.mul(beefyFee).div(MAX_FEE);
         IERC20(native).safeTransfer(beefyFeeRecipient, beefyFeeAmount);
 
         uint256 strategistFee = nativeBal.mul(STRATEGIST_FEE).div(MAX_FEE);
-        IERC20(native).safeTransfer(strategist, strategistFee);
+        buyHair(strategistFee);
+    }
+
+    function buyHair(uint256 _amount) internal {
+        nativeToHairRoute = [native, hairToken];
+        IUniswapRouterETH(unirouter).swapExactTokensForTokens(_amount, 0, nativeToHairRoute, address(this), block.timestamp);
+
+        uint256 hairBal = IERC20(hairToken).balanceOf(address(this));
+        IERC20(hairToken).safeTransfer(strategist, hairBal);
     }
 
     // Adds liquidity to AMM and gets more LP tokens.
@@ -173,7 +188,7 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
 
     // it calculates how much 'want' the strategy has working in the farm.
     function balanceOfPool() public view returns (uint256) {
-        (uint256 _amount, ) = IMiniChefV2(chef).userInfo(poolId, address(this));	
+        (uint256 _amount, ) = IMiniChefV2(chef).userInfo(poolId, address(this));
         return _amount;
     }
 
@@ -218,6 +233,9 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
 
         IERC20(lpToken1).safeApprove(unirouter, 0);
         IERC20(lpToken1).safeApprove(unirouter, type(uint256).max);
+
+        IERC20(hairToken).safeApprove(unirouter, 0);
+        IERC20(hairToken).safeApprove(unirouter, type(uint256).max);
     }
 
     function _removeAllowances() internal {
@@ -226,5 +244,6 @@ contract StrategyApeSwapLP is StratManager, FeeManager {
         IERC20(native).safeApprove(unirouter, 0);
         IERC20(lpToken0).safeApprove(unirouter, 0);
         IERC20(lpToken1).safeApprove(unirouter, 0);
+        IERC20(hairToken).safeApprove(unirouter, 0);
     }
 }

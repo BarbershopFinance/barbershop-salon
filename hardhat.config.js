@@ -63,7 +63,9 @@ module.exports = {
       url: 'https://polygon-rpc.com',
       chainId: 137,
       networkId: 137,
-      gas: 8000000,
+      // gas: 8000000,
+      gasPrice: 8000000000,
+      gas: 4100000,
       accounts: {
         mnemonic: `${process.env.MNEMONIC}`,
       },

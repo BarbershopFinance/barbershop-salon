@@ -24,3 +24,6 @@ reserve:
 
 update_emissions:
 	npx hardhat run --network infura scripts/updateEmissionsRate.js
+
+deploy_new_vault:
+	npx hardhat run --network maticMainnet scripts/vaults/deploySushi_AVAX_ETH.ts --verbose
