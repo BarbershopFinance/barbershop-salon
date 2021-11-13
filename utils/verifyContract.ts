@@ -1,12 +1,12 @@
+import { Address } from 'hardhat-deploy/dist/types';
 import hardhat from "hardhat";
-import { Contract } from "@ethersproject/contracts";
 
 export const verifyContract = async (
-  contract: Contract,
+  address: Address,
   constructorArguments: any[],
 ) => {
   await hardhat.run("verify:verify", {
-    address: contract.address,
+    address,
     constructorArguments,
   });
 };

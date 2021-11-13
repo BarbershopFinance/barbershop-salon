@@ -16,8 +16,6 @@ require('hardhat-gas-reporter');
 
 // const { mnemonic } = require('./secrets.json');
 
-const INFURA_PROJECT_ID = process.env.PRIVATE_KEY;
-
 // You have to export an object to set up your config
 // This object can have the following optional entries:
 // defaultNetwork, networks, solc, and paths.
@@ -65,7 +63,7 @@ module.exports = {
       networkId: 137,
       // gas: 8000000,
       gasPrice: 8000000000,
-      gas: 4100000,
+      gas: 8100000,
       accounts: {
         mnemonic: `${process.env.MNEMONIC}`,
       },
@@ -80,18 +78,20 @@ module.exports = {
       gas: 2100000,
     },
     infura: {
-      url: `https://polygon-mainnet.infura.io/v3/${INFURA_PROJECT_ID}`,
+      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts: {
         // eslint-disable-next-line quotes
         // path: "m/44'/60'/0'/0", // ledger wallet
+        // eslint-disable-next-line quotes
+        path: "m/44'/60'/0'/0/0",
         initialIndex: 0,
         // count: 100,
         mnemonic: `${process.env.MNEMONIC}`,
       },
       chainId: 137,
-      // networkId: 137,
+      networkId: 137,
       gasPrice: 8000000000,
-      gas: 2100000,
+      gas: 6100000,
     },
   },
   namedAccounts: {

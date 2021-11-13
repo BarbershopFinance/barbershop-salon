@@ -5,7 +5,9 @@ import * as rlp from "rlp";
 import keccak from "keccak";
 
 export const predictAddresses = async ({ creator }: { creator: string }) => {
-  creator = creator || "0x749Ed2e4A52B44eE6d7c111f47Ef3e4a8bafe4f5";
+  if (!creator) {
+    console.error('Error! Missing signer.')
+  }
 
   let currentNonce = await web3.eth.getTransactionCount(creator);
   let currentNonceHex = `0x${currentNonce.toString(16)}`;

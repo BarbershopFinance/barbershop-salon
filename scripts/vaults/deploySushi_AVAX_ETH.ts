@@ -5,21 +5,18 @@ import deployVault, { VaultConfig } from '../../utils/deployVault';
 
 const myAddress = '0x749Ed2e4A52B44eE6d7c111f47Ef3e4a8bafe4f5';
 
+// could the beefy replacemant matter in predictAddresses??
+
 const config = {
   ...sushiConfig(),
   ...sushiVaultAvaxEth(),
 };
 
-console.log('config', config)
-
 async function main() {
   await hardhat.run('compile');
 
-  const [deployer] = await ethers.getSigners();
-
   const vault: VaultConfig = {
     contractName: 'VB',    
-    signer: deployer,
     name: 'VB-avax_eth',
     symbol: 'vb-avax-eth',
     delay: 0,
@@ -45,7 +42,15 @@ async function main() {
 }
 
 main()
-  .then(() => process.exit(0))
+  .then((resp) => {
+    console.log('CONFIG (copy to frontend)');
+    console.log('config: ', config);
+
+    console.log('vault address: ', resp.vault.address);
+    console.log('strategy address: ', resp.strategy.address);
+
+    process.exit(0);
+  })
   .catch(error => {
     console.error(error);
     process.exit(1);
