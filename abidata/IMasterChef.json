@@ -1,0 +1,9 @@
+[
+  "function deposit(uint256 _pid, uint256 _amount)",
+  "function emergencyWithdraw(uint256 _pid)",
+  "function enterStaking(uint256 _amount)",
+  "function leaveStaking(uint256 _amount)",
+  "function pending(uint256 _pid, address _user) view returns (uint256)",
+  "function userInfo(uint256 _pid, address _user) view returns (uint256, uint256)",
+  "function withdraw(uint256 _pid, uint256 _amount)"
+]

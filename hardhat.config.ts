@@ -2,21 +2,30 @@
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+
 require('dotenv').config();
-require('@nomiclabs/hardhat-ganache');
-require('@nomiclabs/hardhat-truffle5');
-require('@nomiclabs/hardhat-waffle');
-require('@nomiclabs/hardhat-solhint');
-require('@nomiclabs/hardhat-ethers');
-require('@nomiclabs/hardhat-etherscan');
-require('hardhat-deploy-ethers');
+require('hardhat-abi-exporter');
+
+// require('@nomiclabs/hardhat-ganache');
+// require('@nomiclabs/hardhat-truffle5');
+// require('@nomiclabs/hardhat-waffle');
+// require('@nomiclabs/hardhat-solhint');
+// require('@nomiclabs/hardhat-ethers');
+// require('@nomiclabs/hardhat-etherscan');
+// require('hardhat-deploy-ethers');
 require('hardhat-deploy');
 
-require('hardhat-gas-reporter');
+// require('hardhat-gas-reporter');
 
-const { mnemonic } = require('./secrets.json');
+import "@nomiclabs/hardhat-waffle";
+import "@nomiclabs/hardhat-web3";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-solhint";
+import "@nomiclabs/hardhat-etherscan";
+import "hardhat-gas-reporter"
+// import "./tasks";
 
-const INFURA_PROJECT_ID = process.env.PRIVATE_KEY;
+// const { mnemonic } = require('./secrets.json');
 
 // You have to export an object to set up your config
 // This object can have the following optional entries:
@@ -32,6 +41,9 @@ module.exports = {
         runs: 200,
       },
     },
+    compilers: [
+      { version: '0.8.6' },
+    ],
   },
   defaultNetwork: 'hardhat',
   gasReporter: {
@@ -42,7 +54,7 @@ module.exports = {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
       gasPrice: 20000000000,
-      accounts: { mnemonic: mnemonic },
+      // accounts: { mnemonic: mnemonic },
     },
     development: {
       url: 'http://127.0.0.1:7545',
@@ -57,11 +69,13 @@ module.exports = {
       gas: 2100000,
     },
     maticMainnet: {
-      url: 'https://rpc-mainnet.maticvigil.com',
+      url: 'https://polygon-rpc.com',
       chainId: 137,
       networkId: 137,
-      gas: 5500000,
+      gas: 2100000,
+      gasPrice: 32e9,
       accounts: {
+        initialIndex: 1,
         mnemonic: `${process.env.MNEMONIC}`,
       },
     },
@@ -75,16 +89,18 @@ module.exports = {
       gas: 2100000,
     },
     infura: {
-      url: `https://polygon-mainnet.infura.io/v3/${INFURA_PROJECT_ID}`,
+      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts: {
         // eslint-disable-next-line quotes
         // path: "m/44'/60'/0'/0", // ledger wallet
-        initialIndex: 0,
+        // eslint-disable-next-line quotes
+        // path: "m/44'/60'/0'/0/0",
+        // initialIndex: 0,
         // count: 100,
         mnemonic: `${process.env.MNEMONIC}`,
       },
       chainId: 137,
-      // networkId: 137,
+      networkId: 137,
       gasPrice: 8000000000,
       gas: 2100000,
     },
@@ -107,4 +123,11 @@ module.exports = {
   etherscan: {
     apiKey: process.env.POLYGONSCAN_API_KEY,
   },
+  abiExporter: {
+    path: './abidata',
+    clear: true,
+    flat: true,
+    spacing: 2,
+    pretty: true,
+  }
 };

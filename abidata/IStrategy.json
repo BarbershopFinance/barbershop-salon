@@ -1,0 +1,17 @@
+[
+  "function balanceOf() view returns (uint256)",
+  "function balanceOfPool() view returns (uint256)",
+  "function balanceOfWant() view returns (uint256)",
+  "function beforeDeposit()",
+  "function deposit()",
+  "function harvest()",
+  "function panic()",
+  "function pause()",
+  "function paused() view returns (bool)",
+  "function retireStrat()",
+  "function unirouter() view returns (address)",
+  "function unpause()",
+  "function vault() view returns (address)",
+  "function want() view returns (address)",
+  "function withdraw(uint256)"
+]

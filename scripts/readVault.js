@@ -10,12 +10,36 @@ async function main () {
   console.log('e: ', e.address);
   console.log('f: ', f.address);
   console.log('g: ', g.address);
+  const { alice } = await ethers.getNamedSigners();
 
-  const vault = await ethers.getContractAt('VaultBarber', '0x7b38E07A5Ab75Be69878f825de336b4EFa07A426');
+  const vault = await ethers.getContractAt('VaultBarber', '0x39e596Dc819ad398512D5081F10811d44c3bd60F');
 
-  const value = await vault.strategy();
+  const stratAddress = await vault.strategy();
 
-  console.log('value: ', value);
+  console.log('stratAddress: ', stratAddress);
+
+  const strategy = await ethers.getContractAt('StrategySushiSwapLP', stratAddress);
+
+  const callReward = await strategy.callReward();
+
+  console.log('callReward: ', callReward);
+
+  const rewardsAvailable = await strategy.rewardsAvailable();
+
+  console.log('rewards avail: ', rewardsAvailable);
+
+  const outputToNative = await strategy.outputToNative();
+
+  console.log('outputToNative', outputToNative);
+
+  // try {
+  //   // await strategy.connect(alice).harvestWithCallFeeRecipient(alice.address);
+  //   await strategy.connect(alice).harvest();
+  // } catch (e) {
+  //   console.log('e', e);
+  // }
+
+  return null;
 
   // const result = await value.wait();
   // console.log('result: ', result);

@@ -1,0 +1,10 @@
+[
+  "function deposit(uint256 pid, uint256 amount, address to)",
+  "function emergencyWithdraw(uint256 pid, address to)",
+  "function harvest(uint256 pid, address to)",
+  "function pendingToken(uint256 _pid, address _user) view returns (uint256)",
+  "function poolLength() view returns (uint256)",
+  "function userInfo(uint256 _pid, address _user) view returns (uint256, uint256)",
+  "function withdraw(uint256 pid, uint256 amount, address to)",
+  "function withdrawAndHarvest(uint256 pid, uint256 amount, address to)"
+]

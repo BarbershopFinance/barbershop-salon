@@ -1,0 +1,20 @@
+[
+  "event LevelComplete(uint256 level)",
+  "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+  "event SquarePurchased(uint256 indexed sid, address indexed userAddress, uint256 amount, string text, string image, string link)",
+  "event UserBanned(address bannedAddress)",
+  "function MAX_MESSAGE_LENGTH() view returns (uint256)",
+  "function STARTING_PRICE() view returns (uint256)",
+  "function addToBlocklist(address _bannedAddress)",
+  "function blocklist(address) view returns (bool)",
+  "function buySquare(uint256 _squareId, string _text, string _image, string _link)",
+  "function currentLevel() view returns (uint256)",
+  "function currentRate() view returns (uint256)",
+  "function hairToken() view returns (address)",
+  "function owner() view returns (address)",
+  "function renounceOwnership()",
+  "function squares(uint256) view returns (uint256 sid, address userAddress, uint256 amount, string text, string image, string link)",
+  "function squaresPerLevel() view returns (uint256)",
+  "function totalHairBurned() view returns (uint256)",
+  "function transferOwnership(address newOwner)"
+]

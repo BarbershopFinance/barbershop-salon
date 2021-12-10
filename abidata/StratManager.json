@@ -1,0 +1,20 @@
+[
+  "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+  "event Paused(address account)",
+  "event Unpaused(address account)",
+  "function barbershopFeeRecipient() view returns (address)",
+  "function beforeDeposit()",
+  "function keeper() view returns (address)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function renounceOwnership()",
+  "function setBarbershopFeeRecipient(address _barbershopFeeRecipient)",
+  "function setKeeper(address _keeper)",
+  "function setStrategist(address _strategist)",
+  "function setUnirouter(address _unirouter)",
+  "function setVault(address _vault)",
+  "function strategist() view returns (address)",
+  "function transferOwnership(address newOwner)",
+  "function unirouter() view returns (address)",
+  "function vault() view returns (address)"
+]

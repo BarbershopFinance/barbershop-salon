@@ -7,3 +7,5 @@ artifacts
 
 .env
 secrets.json
+
+abidata

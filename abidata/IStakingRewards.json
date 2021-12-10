@@ -1,0 +1,11 @@
+[
+  "function balanceOf(address account) view returns (uint256)",
+  "function earned(address account) view returns (uint256)",
+  "function exit()",
+  "function getReward()",
+  "function lastTimeRewardApplicable() view returns (uint256)",
+  "function rewardPerToken() view returns (uint256)",
+  "function stake(uint256 amount)",
+  "function totalSupply() view returns (uint256)",
+  "function withdraw(uint256 amount)"
+]
